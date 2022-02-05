@@ -2,16 +2,17 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import datetime as dt
 import random
-
+import multipledispatch as md
 import defectio
+from defectio.ext import commands
 from src import core
 from collections import defaultdict
 import contextlib
+from defectio import Message
 
 
 if TYPE_CHECKING:
     from src.models.config import LevelsConfiguration
-    from defectio import Message
     from src.mongo.models.levels import UserServerLevelModel
 
 
@@ -36,7 +37,17 @@ class Levels(core.Cog):
             if await self._has_user_level_up(user, exp_gained):
                 await self.on_user_levelup(message, user)
 
-    async def on_user_levelup(self, message: Message, user: UserServerLevelModel):
+    @commands.command("level")
+    async def level(self, ctx: core.Context):
+        """ View your current level and exp required for the next level """
+        user = await self._get_user_server_info(ctx)
+
+        exp_next_level = user.exp_from_level(user.level + 1)
+
+        await ctx.reply(f"You are level **{user.level}** (**{user.exp}XP/{exp_next_level}XP**)")
+
+    @classmethod
+    async def on_user_levelup(cls, message: Message, user: UserServerLevelModel):
         """
         Event listener called when a user has levelled up at least once
         :param message: Revolt message
@@ -67,6 +78,7 @@ class Levels(core.Cog):
         """
         return user.level > user.level_from_exp(user.exp - exp_gained)
 
+    @md.dispatch(Message)
     async def _get_user_server_info(self, message: Message) -> UserServerLevelModel:
         """
         Fetch user data for a preovided server
@@ -74,7 +86,28 @@ class Levels(core.Cog):
         :return:
             Mongo model for the user
         """
-        return await self.bot.mongo.levels.get_user(message.author_id, core.utils.get_server_id(message.server))
+        return await self._get_user_server_info(message.author_id, core.utils.get_server_id(message.server))
+
+    @md.dispatch(core.Context)
+    async def _get_user_server_info(self, ctx: core.Context) -> UserServerLevelModel:
+        """
+        Fetch user data for a provided server
+        :param ctx: Revolt command context
+        :return:
+            Mongo model for the user
+        """
+        return await self._get_user_server_info(ctx.author.id, core.utils.get_server_id(ctx.server))
+
+    @md.dispatch(str, str)
+    async def _get_user_server_info(self, user_id: str, server_id: str) -> UserServerLevelModel:
+        """
+        Fetch user data for a preovided server
+        :param user_id: Revolt user id
+        :param server_id: Revolt server id
+        :return:
+            Mongo model for the user
+        """
+        return await self.bot.mongo.levels.get_user(user_id, server_id)
 
     def _set_user_timer(self, message: Message):
         """

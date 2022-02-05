@@ -35,7 +35,7 @@ class Anime(Cog):
         await ctx.send("An unexpected error occurred")
 
     async def _fetch_quote(self) -> Union[Quote, None]:
-        resp = await self.http_session.get("https://animechan.vercel.app/api/random")
+        resp = await self.bot.aiohttp.get("https://animechan.vercel.app/api/random")
 
         if resp.status == 200:
             data = await resp.json()
@@ -43,7 +43,7 @@ class Anime(Cog):
             return Quote.parse_obj(data)
 
     async def _fetch_waifu(self, type_):
-        resp = await self.http_session.get(f"https://api.waifu.pics/{type_}/waifu")
+        resp = await self.bot.aiohttp.get(f"https://api.waifu.pics/{type_}/waifu")
 
         if resp.status == 200:
             data = await resp.json()

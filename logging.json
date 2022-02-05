@@ -12,14 +12,14 @@
       "class": "logging.handlers.RotatingFileHandler",
       "formatter": "standard",
       "filename": "./logs/logfile.log",
-      "maxBytes": 10000,
+      "maxBytes": 100000,
       "backupCount": 5,
       "delay": true
     }
   },
   "formatters": {
     "standard": {
-      "format": "%(levelname)-s %(asctime)s %(message)s",
+      "format": "%(levelname)s %(asctime)s %(message)s",
       "datefmt": "%d/%m/%Y %H:%M:%S"
     }
   },

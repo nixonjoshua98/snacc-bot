@@ -34,3 +34,5 @@ class BotConfiguration(BaseModel):
 
     mongo: MongoConfiguration = Field(..., alias="Mongo")
     cogs: CogConfiguration = Field(..., alias="CogConfigurations")
+
+    development: bool = Field(False, alias="DevelopmentMode")

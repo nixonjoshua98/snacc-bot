@@ -44,7 +44,7 @@ class XKCD(Cog):
             return new_page
 
     async def _fetch_page(self, url) -> Union[ComicPage, None]:
-        resp = await self.http_session.get(url)  # Fetch the xkcd url
+        resp = await self.bot.aiohttp.get(url)  # Fetch the xkcd url
 
         if resp.status == 200:
             data = await resp.json()

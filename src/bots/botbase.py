@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from defectio.ext import commands, tasks
 
-import contextlib
+import aiohttp
 from src.models.config import BotConfiguration
 from src import utils, core
 from typing import Union, TYPE_CHECKING
@@ -26,6 +26,7 @@ class BotBase(commands.Bot):
 
         self.config = self._load_config()
         self.mongo = AsyncMongoClient(self.config)
+        self.aiohttp = aiohttp.ClientSession()
 
         self._started_at = None
         self._on_ready_called = False
@@ -34,6 +35,9 @@ class BotBase(commands.Bot):
 
     @property
     def uptime(self) -> dt.timedelta: return dt.datetime.utcnow() - self._started_at
+
+    @property
+    def development_mode(self) -> bool: return self.config.development
 
     async def on_ready(self):
         if not self._on_ready_called:
@@ -61,13 +65,27 @@ class BotBase(commands.Bot):
 
     @tasks.loop(seconds=30)
     async def _profile_update_loop(self):
-        await self.user.edit(status=f"s!help • Serving {len(self.servers):,} servers")
+        ls = [
+            f"s!help • Serving {len(self.servers):,} servers",
+            f"s!info • Join our server!",
+            f"s!help • What feature next?"
+        ]
+
+        await self.user.edit(status=ls[self._profile_update_loop._current_loop % len(ls)])
 
     async def get_prefix(self, message: Message) -> Union[list[str], str]:
-        with contextlib.suppress(Exception):
+
+        if self.development_mode:
+            return ".!"
+
+        try:
             profile = await self.mongo.servers.get_server(core.utils.get_server_id(message.server))
+        except Exception as e:
+            logger.exception(e)
+            return "s!"
+
+        else:
             return ["s!", profile.prefix]
-        return "s!"
 
     async def get_context(self, message, *, cls=None) -> core.Context:
         return await super(BotBase, self).get_context(message, cls=core.Context)
