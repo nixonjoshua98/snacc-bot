@@ -36,9 +36,6 @@ class BotBase(commands.Bot):
     @property
     def uptime(self) -> dt.timedelta: return dt.datetime.utcnow() - self._started_at
 
-    @property
-    def development_mode(self) -> bool: return self.config.development
-
     async def on_ready(self):
         if not self._on_ready_called:
             self._on_ready_called = True
@@ -65,7 +62,7 @@ class BotBase(commands.Bot):
 
     async def get_prefix(self, message: Message) -> Union[list[str], str]:
 
-        if self.development_mode:
+        if self.config.development:
             return ".!"
 
         try:

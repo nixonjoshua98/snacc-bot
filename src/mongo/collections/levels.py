@@ -10,6 +10,19 @@ class LevelsCollection:
     def __init__(self, client: AsyncMongoClient):
         self.col = client.database["userLevels"]
 
+    async def set_show_level_alerts(self, user_id: str, server_id: str, val: bool):
+        print(user_id, server_id, val)
+        await self.col.update_one(
+            {
+                UserServerLevelModel.Aliases.USER_ID: user_id,
+                UserServerLevelModel.Aliases.SERVER_ID: server_id
+            },
+            {
+                "$set": {UserServerLevelModel.Aliases.SHOW_LEVEL_ALERTS: val}
+            },
+            upsert=True
+        )
+
     async def add_exp(self, user_id: str, server_id: str, exp: int):
         """
         Increment the exp a user has earned in a given server

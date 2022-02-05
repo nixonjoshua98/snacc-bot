@@ -37,15 +37,6 @@ class Levels(core.Cog):
             if await self._has_user_level_up(user, exp_gained):
                 await self.on_user_levelup(message, user)
 
-    @commands.command("level")
-    async def level(self, ctx: core.Context):
-        """ View your current level and exp required for the next level """
-        user = await self._get_user_server_info(ctx)
-
-        exp_next_level = user.exp_from_level(user.level + 1)
-
-        await ctx.reply(f"You are level **{user.level}** (**{user.exp}XP/{exp_next_level}XP**)")
-
     @classmethod
     async def on_user_levelup(cls, message: Message, user: UserServerLevelModel):
         """
@@ -53,8 +44,29 @@ class Levels(core.Cog):
         :param message: Revolt message
         :param user: User level model
         """
+
+        if not user.show_level_alerts:
+            return None  # Return early
+
         with contextlib.suppress(defectio.HTTPException):
-            await message.channel.send(f"{message.author} is now level **{user.level}**!")
+            await message.channel.send(f"{message.author} has levelled up! You are now level **{user.level}**")
+
+    @commands.command("toggle-alerts")
+    async def toggle_alerts(self, ctx: core.Context):
+        await self.toggle_show_level_alerts(profile := await self._get_user_server_info(ctx))
+
+        await ctx.send(f"Your level alerts have been **{'disabled' if profile.show_level_alerts else 'enabled'}**")
+
+    @commands.command("level")
+    async def level(self, ctx: core.Context):
+        """
+        View your current level and exp required for the next level
+        """
+        user = await self._get_user_server_info(ctx)
+
+        exp_next_level = user.exp_from_level(user.level + 1)
+
+        await ctx.reply(f"You are level **{user.level}** (**{user.exp}XP/{exp_next_level}XP**)")
 
     async def _give_random_exp(self, message: Message) -> int:
         """
@@ -77,6 +89,14 @@ class Levels(core.Cog):
             Boolean whether the exp they gained 'exp_gained' gave them an additional level
         """
         return user.level > user.level_from_exp(user.exp - exp_gained)
+
+    async def toggle_show_level_alerts(self, user: UserServerLevelModel):
+        """
+        Toggle the user setting to show level alerts
+        :param user:
+        :return:
+        """
+        await self.bot.mongo.levels.set_show_level_alerts(user.user_id, user.server_id, not user.show_level_alerts)
 
     @md.dispatch(Message)
     async def _get_user_server_info(self, message: Message) -> UserServerLevelModel:

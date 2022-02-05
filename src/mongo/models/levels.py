@@ -12,10 +12,12 @@ class UserServerLevelModel(BaseModel):
         USER_ID = "userId"
         SERVER_ID = "serverId"
         EXP = "expEarned"
+        SHOW_LEVEL_ALERTS = "showlevelAlerts"
 
     user_id: str = Field(..., alias=Aliases.USER_ID)
     server_id: str = Field(..., alias=Aliases.SERVER_ID)
     exp: int = Field(0, alias=Aliases.EXP)
+    show_level_alerts: bool = Field(True, alias=Aliases.SHOW_LEVEL_ALERTS)
 
     @property
     def level(self) -> int:

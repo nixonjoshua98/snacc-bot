@@ -29,7 +29,7 @@ class Economy(Cog):
     async def bal(self, ctx: Context):
         profile: UserEconomyProfile = await self._get_user_profile(ctx.author)
 
-        await ctx.send(f"You have **{profile.currency:,}**:cookie:")
+        await ctx.send(f"You have **{profile.currency:,}** :cookie:")
 
     @commands.command("richest")
     async def richest(self, ctx: Context):
@@ -40,7 +40,7 @@ class Economy(Cog):
         for rank, profile in enumerate(users, start=1):
             name = await ctx.bot.get_user_username(profile.user_id)
 
-            rows.append(f"**#{rank}** {profile.currency}:cookie: - {name}")
+            rows.append(f"**#{rank}** {profile.currency} :cookie: - {name}")
 
         content = "**Top 15 Richest Users**\n" + "\n".join(rows)
 
@@ -62,11 +62,11 @@ class Economy(Cog):
 
                 return await ctx.send(f"You have already claimed your daily reward! Try again in `{delta_str}`")
 
-            # New day, so we can advance the streak
+            # New day, so we can advance the streak (over 1 day and the streak is destroyed)
             if days_since == 1:
                 streak = profile.daily_streak + 1
 
-        reward = self.config.base_daily_reward  # Base
+        reward = self.config.base_daily_reward  # Base reward
         reward += (min(self.config.max_daily_streak_reward, streak) * self.config.reward_per_daily_sreak)  # Streak
 
         # Create the default claim text
