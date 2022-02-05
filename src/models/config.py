@@ -17,6 +17,9 @@ class LevelsConfiguration(BaseModel):
 
 class EconomyConfiguration(BaseModel):
     base_daily_reward: int = Field(..., alias="BaseDailyLoginReward")
+    max_daily_streak_reward: int = Field(..., alias="MaxDailyStreakReward")
+    reward_per_daily_sreak: int = Field(..., alias="RewardPerDailyStreak")
+    support_server_multiplier: float = Field(..., alias="SupportServerMultiplier")
 
 
 class CogConfiguration(BaseModel):
@@ -27,6 +30,7 @@ class CogConfiguration(BaseModel):
 class BotConfiguration(BaseModel):
     bot_token: str = Field(..., alias="BotToken")
     launch_extensions: list[str] = Field([], alias="LaunchExtensions")
+    support_server_id: str = Field(..., alias="SupportServerId")
 
     invite_link: str = Field(..., alias="InviteLink")
     server_link: str = Field(..., alias="ServerLink")

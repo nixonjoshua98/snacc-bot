@@ -62,16 +62,33 @@ class Economy(Cog):
 
                 return await ctx.send(f"You have already claimed your daily reward! Try again in `{delta_str}`")
 
-            if days_since == 1:  # New day, so we can advance the streak
+            # New day, so we can advance the streak
+            if days_since == 1:
                 streak = profile.daily_streak + 1
 
-        streak_reward = min(14, streak) * 10
-        total_reward = streak_reward + self.config.base_daily_reward
+        reward = self.config.base_daily_reward  # Base
+        reward += (min(self.config.max_daily_streak_reward, streak) * self.config.reward_per_daily_sreak)  # Streak
 
-        await ctx.bot.mongo.economy.daily_login(ctx.author.id, now, streak, total_reward)
+        # Create the default claim text
+        txt = (f"You have received {reward} {emojis.COOKIE}\n"
+               f"{self.config.base_daily_reward} {emojis.COOKIE}\n"
+               f"{self.config.reward_per_daily_sreak} {emojis.COOKIE} * "
+               f"{streak}d (max {self.config.max_daily_streak_reward} days)")
 
-        await ctx.send(f"You have received ({self.config.base_daily_reward}{emojis.COOKIE} + "
-                       f"{streak_reward}{emojis.COOKIE})")
+        # Claiming in the support server offers a bonus multiplier
+        if ctx.is_support_server():
+            reward *= self.config.support_server_multiplier
+
+            txt += f"\n**x{self.config.support_server_multiplier} support server bonus**"
+
+        # User is not in the support server, so cross out the bonus and do not apply it
+        else:
+            txt += f"\n~~x{self.config.support_server_multiplier} support server bonus~~"
+
+        # Perform the daily login
+        await ctx.bot.mongo.economy.daily_login(ctx.author.id, now, streak, reward)
+
+        await ctx.send(txt)
 
     @commands.command("flip")
     @commands.max_concurrency(1, BucketType.user)
@@ -94,10 +111,10 @@ class Economy(Cog):
     @commands.command(name="bet")
     @commands.max_concurrency(1, BucketType.user)
     async def bet(
-        self,
-        ctx: Context,
-        bet: Range(0, 50_000) = 0,  # type: ignore
-        side: Range(1, 6) = 6  # type: ignore
+            self,
+            ctx: Context,
+            bet: Range(0, 50_000) = 0,  # type: ignore
+            side: Range(1, 6) = 6  # type: ignore
     ):
         """ Roll a die and bet on which side the die lands on """
 
