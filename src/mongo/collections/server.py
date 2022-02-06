@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 class ServerConfigCollection:
     def __init__(self, client: AsyncMongoClient):
-        self.servers = client.database["serversConfig"]
+        self.servers = client.database["serverConfigs"]
 
     async def get_server(self, server_id: str) -> ServerConfigModel:
         r = await self.servers.find_one({ServerConfigModel.Aliases.SERVER_ID: server_id})
