@@ -47,7 +47,7 @@ class BotBase(commands.Bot):
     async def on_startup(self):
         self._started_at = dt.datetime.utcnow()
 
-        logger.info("Bot startup has been called")
+        logger.info("Startup has been called")
 
     async def get_prefix(self, message: Message) -> Union[list[str], str]:
 
