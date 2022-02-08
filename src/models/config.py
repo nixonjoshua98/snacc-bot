@@ -19,7 +19,6 @@ class EconomyConfiguration(BaseModel):
     base_daily_reward: int = Field(..., alias="BaseDailyLoginReward")
     max_daily_streak_reward: int = Field(..., alias="MaxDailyStreakReward")
     reward_per_daily_sreak: int = Field(..., alias="RewardPerDailyStreak")
-    support_server_multiplier: float = Field(..., alias="SupportServerMultiplier")
 
 
 class CogConfiguration(BaseModel):

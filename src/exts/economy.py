@@ -68,22 +68,10 @@ class Economy(Cog):
         # Calculate login reward
         reward = self.config.base_daily_reward  # Base reward
         reward += (min(self.config.max_daily_streak_reward, streak) * self.config.reward_per_daily_sreak)  # Streak
+        reward = int(reward)
 
-        # Create the default claim text
-        txt = (f"You have received {reward} {emojis.COOKIE}\n"
-               f"{self.config.base_daily_reward} {emojis.COOKIE}\n"
-               f"{self.config.reward_per_daily_sreak} {emojis.COOKIE} * "
-               f"{streak}d (max {self.config.max_daily_streak_reward} days)")
-
-        # Claiming in the support server offers a bonus multiplier
-        if ctx.is_support_server():
-            reward *= self.config.support_server_multiplier
-
-            txt += f"\n**x{self.config.support_server_multiplier} support server bonus**"
-
-        # User is not in the support server, so cross out the bonus and do not apply it
-        else:
-            txt += f"\n~~x{self.config.support_server_multiplier} support server bonus~~"
+        # Create the edfault claim text
+        txt = f"You have received **{reward}** {emojis.COOKIE} ({streak} day streak bonus)"
 
         # Perform the daily login
         await ctx.bot.mongo.economy.daily_login(ctx.author.id, now, streak, reward)
@@ -116,7 +104,9 @@ class Economy(Cog):
             bet: Range(0, 50_000) = 0,  # type: ignore
             side: Range(1, 6) = 6  # type: ignore
     ):
-        """ Roll a die and bet on which side the die lands on """
+        """
+        Roll a die and bet on which side the die lands on
+        """
 
         sides = 6
 
