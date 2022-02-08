@@ -62,10 +62,9 @@ class LevelsCollection:
             {"$match": {
                 "$and": [
                     {UserServerLevelModel.Aliases.SERVER_ID: user.server_id},
-                    {UserServerLevelModel.Aliases.EXP: {"$lt": user.exp}}
+                    {UserServerLevelModel.Aliases.EXP: {"$gt": user.exp}}
                 ]}},
-            {"$sort": {UserServerLevelModel.Aliases.EXP: 1}},
-            {"$count": "numUsersBelow"}
+            {"$count": "numUsersAboveExp"}
         ]).to_list(length=None)
 
-        user.server_position = (r[0] if len(r) > 0 else {}).get("numUsersBelow", 0) + 1
+        user.server_position = (r[0] if len(r) > 0 else {}).get("numUsersAboveExp", 0) + 1
