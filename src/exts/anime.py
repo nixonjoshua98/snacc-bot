@@ -1,5 +1,5 @@
 
-from typing import Union
+from typing import Optional
 from src.models import BaseModel
 from defectio.ext import commands
 
@@ -22,7 +22,7 @@ class Anime(Cog):
     async def waifu(self, ctx):
 
         if waifu := await self._fetch_waifu("sfw"):
-            return await ctx.send(waifu.url)
+            return await ctx.send(f"[]({waifu.url})")
 
         await ctx.send("An unexpected error occurred")
 
@@ -34,7 +34,7 @@ class Anime(Cog):
 
         await ctx.send("An unexpected error occurred")
 
-    async def _fetch_quote(self) -> Union[Quote, None]:
+    async def _fetch_quote(self) -> Optional[Quote]:
         resp = await self.bot.aiohttp.get("https://animechan.vercel.app/api/random")
 
         if resp.status == 200:
@@ -42,7 +42,7 @@ class Anime(Cog):
 
             return Quote.parse_obj(data)
 
-    async def _fetch_waifu(self, type_):
+    async def _fetch_waifu(self, type_) -> Optional[Waifu]:
         resp = await self.bot.aiohttp.get(f"https://api.waifu.pics/{type_}/waifu")
 
         if resp.status == 200:

@@ -1,6 +1,7 @@
 import aioify
 import cpuinfo
 import psutil
+import defectio
 from defectio.ext import commands
 from src import core, utils
 from src.classes import RevoltTable
@@ -14,7 +15,7 @@ class BotInfo(core.Cog):
 
         tbl.add_row("Invite Link", ctx.bot.config.invite_link)
         tbl.add_row("Server Link", ctx.bot.config.server_link)
-        #tbl.add_row("GitHub Link", ctx.bot.config.github_link)
+        tbl.add_row("GitHub Link", ctx.bot.config.github_link)
 
         await ctx.send(tbl.string())
 
@@ -33,6 +34,7 @@ class BotInfo(core.Cog):
 
         tbl.add_row("Bot Uptime", utils.format_timedelta(ctx.bot.uptime, '{D} days, {H} hours, {M} minutes'))
         tbl.add_row("Python Version", cpu.get('python_version', 'N/A'))
+        tbl.add_row("Defectio Version", defectio.__version__)
         tbl.add_row("Processor", cpu.get('brand_raw', 'N/A'))
         tbl.add_row("Memory", f"{bits_to_gb(mem.used)}GB / {bits_to_gb(mem.total)}GB")
         tbl.add_row("Storage", f"{bits_to_gb(storage.used)}GB / {bits_to_gb(storage.total)}GB")

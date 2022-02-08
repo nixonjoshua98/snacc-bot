@@ -26,9 +26,6 @@ class ErrorHandler(commands.Cog):
         if isinstance(esc, (CommandNotFound,)):
             return None
 
-        elif isinstance(esc, NotOwner):
-            await ctx.send("You do not have access to this command")
-
         elif isinstance(esc, CommandOnCooldown):
             await ctx.send(f"You are on cooldown! Try again in `{dt.timedelta(seconds=math.ceil(esc.retry_after))}`")
 
@@ -38,7 +35,7 @@ class ErrorHandler(commands.Cog):
         elif isinstance(esc, MaxConcurrencyReached):
             await ctx.send("I am busy! Please retry shortly")
 
-        elif isinstance(esc, (CheckFailure, CheckAnyFailure)):
+        elif isinstance(esc, (NotOwner, CheckFailure, CheckAnyFailure)):
             await ctx.send("You do not have access to this command")
 
         else:

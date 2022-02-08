@@ -8,6 +8,7 @@ from defectio.ext import commands
 from defectio.ext.commands import BucketType
 from typing import TYPE_CHECKING
 from src import utils
+from src.classes import RevoltTable
 from src.common import emojis
 from src.core import Cog, Context
 from src.core.converters import CoinSide, Range
@@ -35,16 +36,14 @@ class Economy(Cog):
     async def richest(self, ctx: Context):
         users: list[UserEconomyProfile] = await ctx.bot.mongo.economy.get_top_richest(15)
 
-        rows = []
+        tbl = RevoltTable(("Rank", "Username", "Total"))
 
         for rank, profile in enumerate(users, start=1):
-            name = await ctx.bot.get_user_username(profile.user_id)
+            user = await ctx.bot.fetch_user(profile.user_id)
 
-            rows.append(f"**#{rank}** {profile.currency} :cookie: - {name}")
+            tbl.add_row(rank, getattr(user, "display_name", "N/A"), f"{profile.currency} {emojis.COOKIE}")
 
-        content = "**Top 15 Richest Users**\n" + "\n".join(rows)
-
-        await ctx.send(content)
+        await ctx.send(tbl.string())
 
     @commands.command("daily")
     async def daily(self, ctx: Context):
@@ -66,6 +65,7 @@ class Economy(Cog):
             if days_since == 1:
                 streak = profile.daily_streak + 1
 
+        # Calculate login reward
         reward = self.config.base_daily_reward  # Base reward
         reward += (min(self.config.max_daily_streak_reward, streak) * self.config.reward_per_daily_sreak)  # Streak
 
@@ -106,7 +106,7 @@ class Economy(Cog):
 
         await ctx.bot.mongo.economy.inc_currency(ctx.author.id, winnings)
 
-        await ctx.send(f"It's **{side_landed}**! You {'won' if correct_side else 'lost'} {bet:,}{emojis.COOKIE}!")
+        await ctx.send(f"It's **{side_landed}**! You {'won' if correct_side else 'lost'} **{bet:,}** {emojis.COOKIE}!")
 
     @commands.command(name="bet")
     @commands.max_concurrency(1, BucketType.user)
@@ -133,7 +133,7 @@ class Economy(Cog):
 
         await ctx.bot.mongo.economy.inc_currency(ctx.author.id, winnings)
 
-        await ctx.send(f"{emojis.N1234} You {'won' if bet_won else 'lost'} {bet}{emojis.COOKIE} "
+        await ctx.send(f"{emojis.N1234} You {f'won {winnings}' if bet_won else f'lost {bet}'} {bet}{emojis.COOKIE} "
                        f"The dice landed on `{side_landed}`")
 
     async def _get_user_profile(self, user: PartialUser) -> UserEconomyProfile:

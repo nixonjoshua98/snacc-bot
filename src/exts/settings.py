@@ -18,8 +18,7 @@ class Settings(core.Cog):
 
         await ctx.send(f"{emojis.WARNING} My default prefix `s!` will still "
                        f"work until command checks are enabled for my library",
-                       delete_after=30
-                       )
+                       delete_after=30)
 
 
 def setup(bot):

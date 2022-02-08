@@ -11,7 +11,6 @@ class LevelsCollection:
         self.col = client.database["userLevels"]
 
     async def set_show_level_alerts(self, user_id: str, server_id: str, val: bool):
-        print(user_id, server_id, val)
         await self.col.update_one(
             {
                 UserServerLevelModel.Aliases.USER_ID: user_id,
@@ -43,11 +42,30 @@ class LevelsCollection:
         await self.col.update_one(search, update, upsert=True)
 
     async def get_user(self, user_id: str, server_id: str) -> UserServerLevelModel:
-        search = {
+        r = await self.col.find_one({
             UserServerLevelModel.Aliases.USER_ID: user_id,
             UserServerLevelModel.Aliases.SERVER_ID: server_id
-        }
+        })
 
-        r = await self.col.find_one(search)
+        user = UserServerLevelModel.parse_obj(r) if r else UserServerLevelModel.default(user_id, server_id)
 
-        return UserServerLevelModel.parse_obj(r) if r else UserServerLevelModel.default(user_id, server_id)
+        await self._update_user_position(user)
+
+        return user
+
+    async def _update_user_position(self, user: UserServerLevelModel):
+        """
+        Update the model with the server position using an aggregation (inefficient)
+        :param user: User model we are updating
+        """
+        r = await self.col.aggregate([
+            {"$match": {
+                "$and": [
+                    {UserServerLevelModel.Aliases.SERVER_ID: user.server_id},
+                    {UserServerLevelModel.Aliases.EXP: {"$lt": user.exp}}
+                ]}},
+            {"$sort": {UserServerLevelModel.Aliases.EXP: 1}},
+            {"$count": "numUsersBelow"}
+        ]).to_list(length=None)
+
+        user.server_position = (r[0] if len(r) > 0 else {}).get("numUsersBelow", 0) + 1

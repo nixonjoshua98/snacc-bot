@@ -3,6 +3,7 @@ from pydantic import Field
 
 
 class ServerConfigModel(BaseModel):
+
     class Aliases:
         PREFIX = "prefix"
         SERVER_ID = "serverId"

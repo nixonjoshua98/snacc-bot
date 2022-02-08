@@ -6,6 +6,7 @@ import multipledispatch as md
 import defectio
 from defectio.ext import commands
 from src import core
+from src.common import emojis
 from collections import defaultdict
 import contextlib
 from defectio import Message
@@ -31,10 +32,13 @@ class Levels(core.Cog):
         if self._can_reward_exp(message):
             self._set_user_timer(message)
 
-            exp_gained = await self._give_random_exp(message)
+            exp = random.randint(self.config.min_exp, self.config.max_exp)
+
+            await self._give_exp(message, exp)
+
             user = await self._get_user_server_info(message)
 
-            if await self._has_user_level_up(user, exp_gained):
+            if await self._has_user_level_up(user, exp):
                 await self.on_user_levelup(message, user)
 
     @classmethod
@@ -44,7 +48,6 @@ class Levels(core.Cog):
         :param message: Revolt message
         :param user: User level model
         """
-
         if not user.show_level_alerts:
             return None  # Return early
 
@@ -53,7 +56,10 @@ class Levels(core.Cog):
 
     @commands.command("toggle-alerts")
     async def toggle_alerts(self, ctx: core.Context):
-        await self.toggle_show_level_alerts(profile := await self._get_user_server_info(ctx))
+        """
+        Toggle level up alerts
+        """
+        await self._toggle_levelup_message(profile := await self._get_user_server_info(ctx))
 
         await ctx.send(f"Your level alerts have been **{'disabled' if profile.show_level_alerts else 'enabled'}**")
 
@@ -68,16 +74,21 @@ class Levels(core.Cog):
 
         await ctx.reply(f"You are level **{user.level}** (**{user.exp}XP/{exp_next_level}XP**)")
 
-    async def _give_random_exp(self, message: Message) -> int:
+    @commands.command("lrank")
+    async def rank(self, ctx: core.Context):
+        """
+        View your current rank in the server
+        """
+        user = await self._get_user_server_info(ctx)
+
+        await ctx.reply(f"{emojis.STAR} {ctx.author} is rank **{user.server_position}** in this server!")
+
+    async def _give_exp(self, message: Message, exp: int):
         """
         Add exp to a user profile for a given server
         :param message: Message which has been sent
-        :return:
-            The exp the user earned
         """
-        exp = random.randint(self.config.min_exp, self.config.max_exp)
         await self.bot.mongo.levels.add_exp(message.author_id, core.utils.get_server_id(message.server), exp)
-        return exp
 
     @classmethod
     async def _has_user_level_up(cls, user: UserServerLevelModel, exp_gained: int):
@@ -90,7 +101,7 @@ class Levels(core.Cog):
         """
         return user.level > user.level_from_exp(user.exp - exp_gained)
 
-    async def toggle_show_level_alerts(self, user: UserServerLevelModel):
+    async def _toggle_levelup_message(self, user: UserServerLevelModel):
         """
         Toggle the user setting to show level alerts
         :param user:
@@ -116,7 +127,7 @@ class Levels(core.Cog):
         :return:
             Mongo model for the user
         """
-        return await self._get_user_server_info(ctx.author.id, core.utils.get_server_id(ctx.server))
+        return await self.bot.mongo.levels.get_user(ctx.author.id, core.utils.get_server_id(ctx.server))
 
     @md.dispatch(str, str)
     async def _get_user_server_info(self, user_id: str, server_id: str) -> UserServerLevelModel:

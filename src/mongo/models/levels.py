@@ -19,6 +19,9 @@ class UserServerLevelModel(BaseModel):
     exp: int = Field(0, alias=Aliases.EXP)
     show_level_alerts: bool = Field(True, alias=Aliases.SHOW_LEVEL_ALERTS)
 
+    # Non-Mongo fields
+    server_position: int = Field(-1)
+
     @property
     def level(self) -> int:
         return self.level_from_exp(self.exp)

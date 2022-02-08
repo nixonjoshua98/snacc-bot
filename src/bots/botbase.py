@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from defectio.ext import commands, tasks
+from defectio.ext import commands
 
 import aiohttp
 from src.models.config import BotConfiguration
@@ -47,18 +47,7 @@ class BotBase(commands.Bot):
     async def on_startup(self):
         self._started_at = dt.datetime.utcnow()
 
-        self._profile_update_loop.start()
-
         logger.info("Bot startup has been called")
-
-    async def get_user_username(self, user_id: str) -> str:
-        if (user := self.get_user(user_id)) and hasattr(user, "name"):
-            return user.name
-
-        elif (user := await self.fetch_user(user_id)) and hasattr(user, "name"):
-            return user.name
-
-        return user_id
 
     async def get_prefix(self, message: Message) -> Union[list[str], str]:
 
@@ -83,16 +72,6 @@ class BotBase(commands.Bot):
 
     def run_with_token(self):
         self.run(token=self.config.bot_token)
-
-    @tasks.loop(seconds=30)
-    async def _profile_update_loop(self):
-        ls = [
-            f"s!help • Serving {len(self.servers):,} servers",
-            f"s!info • Join our server!",
-            f"s!help • What feature next?"
-        ]
-
-        await self.user.edit(status=ls[self._profile_update_loop._current_loop % len(ls)])
 
     def _load_launch_extensions(self):
         for ext in self.config.launch_extensions:
