@@ -12,7 +12,7 @@ class UserServerLevelModel(BaseModel):
         USER_ID = "userId"
         SERVER_ID = "serverId"
         EXP = "expEarned"
-        SHOW_LEVEL_ALERTS = "showlevelAlerts"
+        SHOW_LEVEL_ALERTS = "showLevelAlerts"
 
     user_id: str = Field(..., alias=Aliases.USER_ID)
     server_id: str = Field(..., alias=Aliases.SERVER_ID)
@@ -23,15 +23,15 @@ class UserServerLevelModel(BaseModel):
     server_position: int = Field(-1)
 
     @property
-    def level(self) -> int:
-        return self.level_from_exp(self.exp)
+    def level(self) -> int: return self.level_from_exp(self.exp)
 
     @staticmethod
-    @ft.cache
+    @ft.lru_cache(maxsize=32)
     def exp_from_level(level: int):
         return sum(_level_formula(lvl) for lvl in range(1, level))
 
     @staticmethod
+    @ft.lru_cache(maxsize=32)
     def level_from_exp(exp: int):
         level = 1
 
@@ -44,7 +44,3 @@ class UserServerLevelModel(BaseModel):
             exp -= levelup_exp
 
         return level
-
-    @classmethod
-    def default(cls, user_id: str, server_id: str):
-        return cls(user_id=user_id, server_id=server_id)

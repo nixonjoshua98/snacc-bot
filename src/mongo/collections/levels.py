@@ -47,7 +47,7 @@ class LevelsCollection:
             UserServerLevelModel.Aliases.SERVER_ID: server_id
         })
 
-        user = UserServerLevelModel.parse_obj(r) if r else UserServerLevelModel.default(user_id, server_id)
+        user = UserServerLevelModel.parse_obj(r) if r else UserServerLevelModel(user_id=user_id, server_id=server_id)
 
         await self._update_user_position(user)
 
