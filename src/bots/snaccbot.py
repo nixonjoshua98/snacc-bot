@@ -9,7 +9,7 @@ class SnaccBot(BotBase):
 
         self._profile_update_loop.start()
 
-    @tasks.loop(seconds=30)
+    @tasks.loop(seconds=15)
     async def _profile_update_loop(self):
         ls = [
             f"s!help • Serving {len(self.servers):,} servers",

@@ -15,6 +15,7 @@ LaunchExtensions:
   - src.exts.economy
   - src.exts.animals
   - src.exts.urban
+  - src.exts.eightball
 
 CogConfigurations:
   Levels:

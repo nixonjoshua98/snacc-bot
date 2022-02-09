@@ -42,5 +42,6 @@ class UrbanDictionary(core.Cog):
         if r.status == 200 and (data := (await r.json()).get("list", [])):
             return data[0]
 
+
 def setup(bot):
     bot.add_cog(UrbanDictionary(bot))
