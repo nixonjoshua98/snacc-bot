@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Optional, TYPE_CHECKING, TypedDict
 from defectio.ext import commands
 from src import core
@@ -12,6 +13,9 @@ if TYPE_CHECKING:
         permalink: str
 
 
+DEF_RE = re.compile(r"\[[^\[\]]+]")
+
+
 class UrbanDictionary(core.Cog):
 
     @commands.command("ud")
@@ -19,10 +23,10 @@ class UrbanDictionary(core.Cog):
         """
         Lookup a word or find a random definition
         """
-        define: _DefintionPayload= await self._get_definition(word)
+        define: _DefintionPayload = await self._get_definition(word)
 
         if define is not None:
-            return await ctx.send(f"**[{define['word']}]**\n{define['definition']}")
+            return await ctx.send(f"**[{define['word']}]**\n{self._format_definition(define['definition'])}")
 
         await ctx.send(":x: I failed when attempting to look at Urban Dictionary")
 
@@ -41,6 +45,20 @@ class UrbanDictionary(core.Cog):
 
         if r.status == 200 and (data := (await r.json()).get("list", [])):
             return data[0]
+
+    @staticmethod
+    def _format_definition(value: str):
+        """
+        Format the defintion
+        :param value: Raw definition
+        :return:
+            Formatted defintion
+        """
+        # Remove [brackets] from words
+        for match in set([match.group(0) for match in re.finditer(DEF_RE, value)]):
+            value = value.replace(match, match[1:-1])
+
+        return value
 
 
 def setup(bot):
