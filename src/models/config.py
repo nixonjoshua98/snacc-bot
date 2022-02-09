@@ -29,7 +29,6 @@ class CogConfiguration(BaseModel):
 class BotConfiguration(BaseModel):
     bot_token: str = Field(..., alias="BotToken")
     launch_extensions: list[str] = Field([], alias="LaunchExtensions")
-    support_server_id: str = Field(..., alias="SupportServerId")
 
     invite_link: str = Field(..., alias="InviteLink")
     server_link: str = Field(..., alias="ServerLink")
