@@ -1,0 +1,28 @@
+DevelopmentMode: True
+
+ServerLink: https://app.revolt.chat/invite/xscr71ye
+GitHubLink: https://github.com/nixonjoshua98/snacc-bot
+InviteLink: https://app.revolt.chat/bot/01FF67VN38YY7KZ9MTSR9ED2DA
+
+LaunchExtensions:
+  - src.exts.errorhandler
+  - src.exts.listeners
+  - src.exts.settings
+  - src.exts.botinfo
+  - src.exts.levels
+  - src.exts.xkcd
+  - src.exts.anime
+  - src.exts.economy
+  - src.exts.animals
+  - src.exts.urban
+
+CogConfigurations:
+  Levels:
+   MinExp: 25
+   MaxExp: 50
+   ExpInterval: 180 # Seconds
+
+  Economy:
+    BaseDailyLoginReward: 50
+    MaxDailyStreakReward: 7 # Max num. days to reward for
+    RewardPerDailyStreak: 5

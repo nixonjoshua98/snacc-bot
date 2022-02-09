@@ -80,4 +80,6 @@ class BotBase(commands.Bot):
 
     @staticmethod
     def _load_config() -> BotConfiguration:
-        return BotConfiguration.parse_obj(utils.load_yaml("botconfig.yml"))
+        d: dict = {**utils.load_yaml("botconfig.yml"), **utils.load_yaml("botconfig.private.yml")}
+
+        return BotConfiguration.parse_obj(d)
